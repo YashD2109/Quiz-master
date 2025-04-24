@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Quizzes for Chapter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .add-quiz-button {
+            margin: 20px 0;
+            background-color: #007bff;
+        }
+
+        .add-quiz-button:hover {
+            background-color: #0056b3;
+        }
+
+        .manage-button {
+            background-color: #007bff;
+        }
+
+        .manage-button:hover {
+            background-color: #0056b3;
+
+        }
+
+        .approve-button {
+            background-color: green;
+            color: white;
+            font-size: 16px;
+            width: 100px;
+            transition: background-color 0.3s ease;
+        }
+
+        .approve-button:hover {
+            background-color: darkgreen;
+        }
+
+        /* Reject button */
+        .reject-button {
+            background-color: orange;
+            color: white;
+            font-size: 16px;
+            width: 100px;
+            transition: background-color 0.3s ease;
+        }
+
+        .reject-button:hover {
+            background-color: darkorange;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('admin_chapter',subject_id=subject.id,chapter_id=chapter_id) }}" class="back-btn">Back</a>
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <h2>Manage Quizzes for Chapter: {{ chapter.name }}</h2>
+        <p>Subject: {{ subject.name }}</p>
+
+        <!-- Add Quiz Button -->
+        <a href="/admin/dashboard/subject/{{ subject.id }}/chapter/{{ chapter.id }}/quiz">
+            <button class=" add-quiz-button">Add New Quiz</button>
+        </a>
+
+        <!-- Quizzes List -->
+        <h3>Quizzes for Chapter</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Quiz ID</th>
+                    <th>Quiz Name</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quiz in quizzes %}
+                <tr>
+                    <td>{{ quiz.id }}</td>
+                    <td>{{ quiz.name }}</td>
+                    <td>{{ quiz.status }}</td>
+                    <td>
+                        <form action="/admin/dashboard/subject/{{ subject.id }}/chapter/{{ chapter.id }}" method="POST">
+                            <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                            <button type="submit" class="quiz-approved">
+                                {% if quiz.approved %}
+                                Approved
+                                {% else %}
+                                Unapproved
+                                {% endif %}
+                            </button>
+                        </form>
+                        <!-- Manage Button -->
+                        <a href="/admin/dashboard/subject/{{ subject.id }}/chapter/{{ chapter.id }}/quiz/{{ quiz.id }}">
+                            <button class="manage-button">Manage</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <footer>
+            <p>&copy; 2025 Your Site</p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>

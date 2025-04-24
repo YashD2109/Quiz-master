@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Details - {{ subject.name }} - {{ chapter.name }} - {{ quiz.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-messages ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flash-messages .flash {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .flash-messages .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .flash-messages .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash-messages .flash.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .flash-messages .flash.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        a.btn {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        a.btn:hover {
+            text-decoration: underline;
+        }
+
+        .quiz-details {
+            margin-top: 20px;
+        }
+
+        .quiz-details div {
+            margin-bottom: 15px;
+        }
+
+        .quiz-details div strong {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .quiz-details .status {
+            font-weight: bold;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('user_quiz',subject_id=subject.id,chapter_id=chapter.id,quiz_id=quiz.id) }}"
+            class="back-btn">Back</a>
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>{{ subject.name }}</h1>
+        <h2>{{ chapter.name }}</h2>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                <li class="flash {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <h3>Quiz Details</h3>
+
+        <div class="quiz-details">
+            <div>
+                <strong>Quiz Name:</strong> {{ quiz.name }}
+            </div>
+            <div>
+                <strong>Description:</strong> {{ quiz.description }}
+            </div>
+            <div>
+                <strong>Status:</strong>
+                <span class="status">
+                    {% if quiz.status == 'draft' %}
+                    <span class="badge badge-warning">Draft</span>
+                    {% elif quiz.status == 'scheduled' %}
+                    <span class="badge badge-info">Scheduled</span>
+                    {% elif quiz.status == 'ongoing' %}
+                    <span class="badge badge-primary">Ongoing</span>
+                    {% elif quiz.status == 'completed' %}
+                    <span class="badge badge-success">Completed</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Unknown</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div>
+                <strong>Total Score:</strong> {{ quiz.total_score }}
+            </div>
+            <div>
+                <strong>Question Count:</strong> {{ question}}
+            </div>
+            <div>
+                <strong>Start Line:</strong> {{ quiz.startline }}
+            </div>
+            <div>
+                <strong>Deadline:</strong> {{ quiz.deadline }}
+            </div>
+            <div>
+                <strong>Duration:</strong> {{ quiz.duration }} minutes
+            </div>
+
+            <!-- Attempt Button -->
+            <div>
+                {% if quiz.status == 'ongoing' %}
+                <a href="{{ url_for('quiz_test', subject_id=subject.id,chapter_id=chapter.id,quiz_id=quiz.id) }}">Attempt
+                    quiz</a>
+                {% endif %}
+            </div>
+            <div>
+                {% if quiz.status == 'completed' %}
+                <a href="{{ url_for('quiz_test', subject_id=subject.id,chapter_id=chapter.id,quiz_id=quiz.id) }}">submitted
+                    quiz</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Subjects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('admin_dashboard') }}" class="back-btn">Back</a>
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h2>Manage Subjects</h2>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Add Subject Form -->
+        <h3>Add New Subject</h3>
+        <form action='/admin/dashboard/subject' method="POST">
+            <input type="hidden" name="action" value="add_subject">
+            <label for="name">Subject Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+            <button type="submit">Add Subject</button>
+        </form>
+
+        <!-- Edit Subject Form -->
+        <h3>Edit Subject</h3>
+        <form action='/admin/dashboard/subject' method="POST">
+            <input type="hidden" name="action" value="edit_subject">
+
+            <label for="edit_subject_id">Subject ID:</label>
+            <input type="number" id="edit_subject_id" name="subject_id" required>
+
+            <label for="edit_name">Subject Name:</label>
+            <input type="text" id="edit_name" name="name" required>
+
+            <label for="edit_description">Description:</label>
+            <textarea id="edit_description" name="description" required></textarea>
+
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <!-- List Subjects and Their Chapters -->
+        <h3>Subjects and Chapters</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Subject Name</th>
+                    <th>Description</th>
+                    <th>Chapters</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr>
+                    <td>{{ subject.id }}</td>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ subject.description }}</td>
+                    <td>
+                        <ul>
+                            {% for chapter in subject_chapters[subject] %}
+                            <li>{{ chapter.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <!-- Details Button (Leads to the admin_chapter page for that subject) -->
+                        <a href="{{ url_for('admin_chapter', subject_id=subject.id) }}" class="button">
+                            <button type="button">Details</button>
+                        </a>
+
+                        <!-- Delete Subject Form -->
+                        <form action='/admin/dashboard/subject' method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="delete_subject">
+                            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                            <input type="hidden" name="name" value="{{ subject.name }}">
+                            <button type="submit"
+                                onclick="return confirm('Are you sure you want to delete this subject?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+
+</html>

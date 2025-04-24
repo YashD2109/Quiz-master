@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject.name }} - Chapters</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .btn-info {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-info:hover {
+            background-color: #0056b3;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('user_subject') }}" class="back-btn">Back</a>
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h2>{{ subject.name }} - Chapters</h2>
+        <p><strong>Description:</strong> {{ subject.description }}</p>
+
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class="flash-messages">
+                {% for category, message in messages %}
+                <li class="alert {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Chapter ID</th>
+                    <th>Chapter Name</th>
+                    <th>Scheduled Quiz Count</th>
+                    <th>Ongoing Quiz Count</th>
+                    <th>Completed Quiz Count</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chapter in chapters %}
+                <tr>
+                    <td>{{ chapter.id }}</td>
+                    <td>{{ chapter.name }}</td>
+                    <td>{{ subject_quizzes[chapter.id][0]|length }}</td>
+                    <td>{{ subject_quizzes[chapter.id][1]|length }}</td>
+                    <td>{{ subject_quizzes[chapter.id][2]|length }}</td>
+                    <td>
+                        <a href="{{ url_for('user_quiz', subject_id=subject.id,chapter_id=chapter.id) }}"
+                            class="btn-info">Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f1f1f1;
+        }
+
+        td {
+            background-color: #fafafa;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .approve-button {
+            background-color: #28a745;
+        }
+
+        .approve-button:hover {
+            background-color: #218838;
+        }
+
+        .reject-button {
+            background-color: #ffc107;
+        }
+
+        .reject-button:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        .manage-button {
+            background-color: #007bff;
+        }
+
+        .manage-button:hover {
+            background-color: #0056b3;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .search-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 75%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #0056b3;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('admin_dashboard') }}" class="back-btn">Back</a>
+        <div class="user-info">
+            <p>Admin - User Management</p>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>Manage Users</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert {{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <form method="POST" action="{{ url_for('usercheck') }}">
+                <div>
+                    <select name="search_type" required>
+                        <option value="email">Search by Email</option>
+                        <option value="id">Search by ID</option>
+                    </select>
+                    <input type="text" name="search_term" placeholder="Enter email or ID" required>
+                    <button type="submit" name="action" value="search">Search</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- User Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>User_id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Qualification</th>
+                    <th>Date of Birth</th>
+                    <th>Access</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in search_user %}
+                <tr>
+                    <td>{{user.id}}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.qualification }}</td>
+                    <td>{{ user.dob }}</td>
+                    <td>{{ 'Granted' if user.allow else 'Revoked' }}</td>
+                    <td>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="allow" class="approve-button">
+                                Grant Access
+                            </button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="cancel" class="reject-button">
+                                Revoke Access
+                            </button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="delete" class="delete-button">
+                                Delete User
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- User Table (Search by name results) -->
+        <table>
+            <thead>
+                <tr>
+                    <th>User_id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Qualification</th>
+                    <th>Date of Birth</th>
+                    <th>Access</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{user.id}}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.qualification }}</td>
+                    <td>{{ user.dob }}</td>
+                    <td>{{ 'Granted' if user.allow else 'Revoked' }}</td>
+                    <td>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="allow" class="approve-button">
+                                Grant Access
+                            </button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="cancel" class="reject-button">
+                                Revoke Access
+                            </button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="action" value="delete" class="delete-button">
+                                Delete User
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

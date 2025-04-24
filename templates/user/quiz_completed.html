@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.name }} - Quiz Completed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+            font-weight: bold;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-messages ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flash-messages .flash {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .flash-messages .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .flash-messages .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash-messages .flash.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .flash-messages .flash.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        a.btn {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        a.btn:hover {
+            text-decoration: underline;
+        }
+
+        .quiz-details {
+            margin-bottom: 30px;
+        }
+
+        .quiz-details div {
+            margin-bottom: 20px;
+        }
+
+        .quiz-details div strong {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .question-box {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .question-box h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .answer-status {
+            font-weight: bold;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        .options {
+            margin-bottom: 10px;
+        }
+
+        .options li {
+            margin-bottom: 5px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="{{ url_for('quiz_detail',subject_id=subject.id,chapter_id=chapter.id,quiz_id=quiz.id) }}"
+            class="back-btn">Back</a>
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>{{ quiz.name }} - Quiz Completed</h1>
+        <p><strong>Subject:</strong> {{ subject.name }}</p>
+        <p><strong>Chapter:</strong> {{ chapter.name }}</p>
+        <p><strong>Total Score:</strong> {{ total_score }} / {{ quiz.total_score }}</p>
+
+        <div class="quiz-details">
+            {% for result in results %}
+            <div class="question-box">
+                <h4>{{ loop.index }}. {{ result.question_text }}</h4>
+                <p><strong>Marks:</strong> {{ result.marks }}</p>
+
+                <div class="options">
+                    <strong>Options:</strong>
+                    <ul>
+                        <li>1. {{ result.options[0] }}</li>
+                        <li>2. {{ result.options[1] }}</li>
+                        <li>3. {{ result.options[2] }}</li>
+                        <li>4. {{ result.options[3] }}</li>
+                    </ul>
+                </div>
+
+                <div class="answer-status">
+                    <p><strong>Your Answer:</strong> Option {{ result.selected_answer }}</p>
+                    {% if result.is_correct %}
+                    <p class="correct">Correct!</p>
+                    {% else %}
+                    <p class="incorrect">Incorrect. The correct answer was Option {{ result.correct_option }}.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <a href="{{ url_for('user_quiz', subject_id=subject.id, chapter_id=chapter.id) }}" class="btn">Back to
+                Quiz</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

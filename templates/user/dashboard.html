@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Card Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .col-md-4 {
+            width: 30%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .chapter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .chapter-table th,
+        .chapter-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .chapter-table th {
+            background-color: #f8f9fa;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-box {
+            background-color: #f4f4f4;
+            text-align: center;
+            width: 22%;
+            box-sizing: border-box;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .card-header .btn {
+            background-color: #28a745;
+            font-size: 14px;
+        }
+
+        .card-header .btn:hover {
+            background-color: #218838;
+        }
+
+        .table-wrapper {
+            margin-top: 30px;
+        }
+
+        .leaderboard-btn {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #17a2b8;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .leaderboard-btn:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+    <div class="container">
+        <h1>Welcome, {{ current_user.username }}!</h1>
+
+        <!-- Total Score -->
+        <h2>Your Total Score: {{ total_score }}</h2>
+
+        <!-- Ongoing Quizzes Section -->
+        <h2>Ongoing Quizzes</h2>
+        <div class="row">
+            {% if count_ongoing_quiz>0 %}
+            {% for chapter, quizzes in chapter_quizzes.items() %}
+            {% for quiz in quizzes %}
+            {% if quiz.status == "ongoing" %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{{ quiz.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Status: Ongoing</p>
+                        <a href="{{ url_for('quiz_detail', subject_id=chapter.subject_id, chapter_id=chapter.id, quiz_id=quiz.id) }}"
+                            class="btn">Take Quiz</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% else %}
+            <p>No ongoing quizzes at the moment.</p>
+            {% endif %}
+        </div>
+
+
+
+
+        <h2>Upcoming Quizzes</h2>
+        <div class="row">
+            {% if count_upcoming_quiz>0 %}
+            {% for chapter, quizzes in chapter_quizzes.items() %}
+            {% for quiz in quizzes %}
+            {% if quiz.status == "scheduled" %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{{ quiz.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Status: Upcoming</p>
+                        <a href="{{ url_for('quiz_detail', subject_id=chapter.subject_id, chapter_id=chapter.id, quiz_id=quiz.id) }}"
+                            class="btn">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+            {% set has_upcoming_quizzes = true %}
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% else %}
+            <p>No upcoinging quizzes at the moment.</p>
+            {% endif %}
+        </div>
+
+        <h2>Subjects and Chapters</h2>
+        <div class="row">
+            {% for subject, chapters in subject_chapters.items() %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{{ subject.name }}</h4>
+                        <a href="{{ url_for('user_chapter', subject_id=subject.id) }}" class="btn btn-info btn-sm">View
+                            subject</a>
+                    </div>
+                    <div class="card-body">
+                        <table class="chapter-table">
+                            <thead>
+                                <tr>
+                                    <th>Chapter Title</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chapter in chapters %}
+                                <tr>
+                                    <td>{{ chapter.name }}</td>
+                                    <td>
+                                        <a href="{{ url_for('user_quiz', subject_id=subject.id, chapter_id=chapter.id) }}"
+                                            class="btn btn-info btn-sm">View Chapter</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('admin_leaderboard') }}" class="leaderboard-btn">Scoreboard</a>
+    </div>
+</body>
+
+</html>

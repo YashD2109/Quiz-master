@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .col-md-4 {
+            width: 30%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .chapter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .chapter-table th,
+        .chapter-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .chapter-table th {
+            background-color: #f8f9fa;
+        }
+
+        .status-box {
+            background-color: #f4f4f4;
+            text-align: center;
+            width: 22%;
+            box-sizing: border-box;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .table-wrapper {
+            margin-top: 30px;
+        }
+
+        .leaderboard-btn {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #17a2b8;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .leaderboard-btn:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="user-info">
+            <span>User: {{ current_user.email }} (ID: {{ current_user.id }})</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>Welcome Quiz Master</h1>
+
+        <div class="flash-messages"></div>
+
+        <h2>Quiz Status</h2>
+        <div class="row">
+            <div class="status-box">
+                <h3>{{ draft_quiz | length }} Draft Quizzes</h3>
+            </div>
+            <div class="status-box">
+                <h3>{{ scheduled_quiz | length }} Scheduled Quizzes</h3>
+            </div>
+            <div class="status-box">
+                <h3>{{ ongoing_quiz | length }} Ongoing Quizzes</h3>
+            </div>
+            <div class="status-box">
+                <h3>{{ completed_quiz | length }} Completed Quizzes</h3>
+            </div>
+        </div>
+
+        <h2>Subjects and Chapters</h2>
+
+        <div class="table-header">
+            <h3>Manage Subjects</h3>
+            <a href="{{ url_for('admin_subject') }}" class="btn">Manage All Subjects</a>
+        </div>
+        <br>
+
+        <div class="row">
+            {% for subject, chapters in subject_chapters.items() %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{{ subject.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="chapter-table">
+                            <thead>
+                                <tr>
+                                    <th>Chapter Title</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chapter in chapters %}
+                                <tr>
+                                    <td>{{ chapter.name }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_quiz', subject_id=subject.id, chapter_id=chapter.id) }}"
+                                            class="btn btn-info btn-sm">View Chapter</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('admin_leaderboard') }}" class="leaderboard-btn">Scoreboard</a><br>
+        <a href="{{ url_for('usercheck') }}" class="leaderboard-btn">Users</a>
+    </div>
+</body>
+
+</html>

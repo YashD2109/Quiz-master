@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header .user-info {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .pie-chart,
+        .bar-chart {
+            flex: 1;
+            max-width: 48%;
+        }
+
+        .pie-chart img,
+        .bar-chart img {
+            width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                flex-direction: column;
+            }
+
+            .pie-chart,
+            .bar-chart {
+                max-width: 100%;
+            }
+        }
+
+        .header .back-btn {
+            background-color: #6c757d;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <div class="user-info">
+                <h2>Leaderboard</h2>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+
+        <div class="flash-messages">
+            {% if success_message %}
+            <div class="alert success">{{ success_message }}</div>
+            {% endif %}
+            {% if error_message %}
+            <div class="alert error">{{ error_message }}</div>
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="mb-4">
+            <div class="form-row">
+                <div class="col">
+                    <label for="subject">Subject</label>
+                    <select name="subject" id="subject">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.name }}" {% if subject.name==request.form.subject %} selected {% endif
+                            %}>
+                            {{ subject.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="chapter">Chapter</label>
+                    <select name="chapter" id="chapter">
+                        <option value="">Select Chapter</option>
+                        {% for chapter in chapters %}
+                        <option value="{{ chapter.name }}" {% if chapter.name==request.form.chapter %} selected {% endif
+                            %}>
+                            {{ chapter.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="quiz">Quiz</label>
+                    <select name="quiz" id="quiz">
+                        <option value="">Select Quiz</option>
+                        {% for quiz in quizzes %}
+                        <option value="{{ quiz.name }}" {% if quiz.name==request.form.quiz %} selected {% endif %}>
+                            {{ quiz.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit">Filter</button>
+        </form>
+
+        <div class="charts-container">
+            {% if pie_chart_1 %}
+            <div class="pie-chart">
+                <img src="{{ url_for('static', filename=pie_chart_1) }}"
+                    alt="Pie Chart - Users Who Have Given the Quiz">
+            </div>
+            {% else %}
+            <p>Pie chart for quiz participation not available.</p>
+            {% endif %}
+
+            {% if pie_chart_2 %}
+            <div class="pie-chart">
+                <img src="{{ url_for('static', filename=pie_chart_2) }}" alt="Pie Chart - Score Distribution">
+            </div>
+            {% else %}
+            <p>Pie chart for score distribution not available.</p>
+            {% endif %}
+
+            {% if stacked_bar_chart_filename %}
+            <div class="bar-chart">
+                <img src="{{ url_for('static', filename=stacked_bar_chart_filename) }}"
+                    alt="Bar Chart - Correct/Incorrect Answers">
+            </div>
+            {% else %}
+            <p>Bar chart for correct/incorrect answers not available.</p>
+            {% endif %}
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Quizzes Attempted</th>
+                    <th>Score</th>
+                    <th>Total Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if user_board %}
+                {% for id, name, email , quizzes_attempted, scored, total_score in user_board %}
+                <tr>
+                    <td>{{ id }}</td>
+                    <td>{{ name }}</td>
+                    <td>{{ email }}</td>
+                    <td>{{ quizzes_attempted }}</td>
+                    <td>{{ scored }}</td>
+                    <td>{{ total_score }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No data available</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Quizzes Attempted</th>
+                    <th>Score</th>
+                    <th>Total Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if leaderboard %}
+                {% for id, name, email, quizzes_attempted, scored, total_score in leaderboard %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ id }}</td>
+                    <td>{{ name }}</td>
+                    <td>{{ email }}</td>
+                    <td>{{ quizzes_attempted }}</td>
+                    <td>{{ scored }}</td>
+                    <td>{{ total_score }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No data available</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

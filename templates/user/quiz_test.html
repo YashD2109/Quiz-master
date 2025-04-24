@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.title }} - Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .quiz-details {
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #d9534f;
+        }
+
+        .answered-count {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .flash-messages ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flash-messages .flash {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .flash-messages .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .flash-messages .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash-messages .flash.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .flash-messages .flash.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .quiz-details,
+        .timer {
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #d9534f;
+        }
+
+        .answered-count {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .question-container {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .question-container h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .options {
+            margin-bottom: 10px;
+        }
+
+        .options label {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>{{ quiz.title }}</h1>
+        <div class="quiz-details">
+            <div><strong>Total Score:</strong> {{ quiz.total_score }}</div>
+            <div><strong>Duration:</strong> {{ quiz.duration }} minutes</div>
+            <div><strong>Time Remaining: <span id="timer">{{ quiz.duration * 60 }}</span> seconds</strong></div>
+        </div>
+
+        <form method="POST" id="quiz-form">
+
+            <div class="quiz-questions">
+                {% for question in questions %}
+                <div class="question-container">
+                    <h4>{{ question.index }}. {{ question.text }}</h4>
+                    <div class="options">
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="1">
+                            {{ question.option1 }}
+                        </label>
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="2">
+                            {{ question.option2 }}
+                        </label>
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="3">
+                            {{ question.option3 }}
+                        </label>
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="4">
+                            {{ question.option4 }}
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="answered-count">
+                <p><span id="answered-count">0</span> Answered, <span id="remaining-count">{{ questions|length }}</span>
+                    Remaining</p>
+            </div>
+
+            <button type="submit" class="btn">Submit</button>
+        </form>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                <li class="flash {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <script>
+        console.log("Quiz Duration: {{ quiz.duration }}");
+        let countdownTime = {{ quiz.duration * 60 }};
+        const timerDisplay = document.getElementById('timer');
+        const form = document.getElementById('quiz-form');
+
+        const countdown = setInterval(() => {
+            if (countdownTime <= 0) {
+                clearInterval(countdown);
+                form.submit(); // Submit the form when the countdown reaches zero
+            } else {
+                timerDisplay.textContent = countdownTime; // Update the timer display
+                countdownTime--; // Decrease the countdown time
+            }
+        }, 1000);
+        let answeredCount = 0;
+        const answeredCountElement = document.getElementById('answered-count');
+        const remainingCountElement = document.getElementById('remaining-count');
+        const totalQuestions = {{ questions| length }};
+        document.querySelectorAll('input[type="radio"]').forEach(function (radioButton) {
+            radioButton.addEventListener('change', function () {
+                answeredCount = document.querySelectorAll('input[type="radio"]:checked').length;
+                answeredCountElement.innerText = answeredCount;
+                remainingCountElement.innerText = totalQuestions - answeredCount;
+            });
+
+        });
+
+        window.onbeforeunload = function () {
+            if (answeredCount < totalQuestions) {
+                return 'Are you sure you want to leave? Your progress will not be saved.';
+            }
+        };                                                                                           
+    </script>
+
+</body>
+
+</html>
